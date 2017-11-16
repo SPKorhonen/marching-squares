@@ -8,15 +8,10 @@ export interface Renderer {
     getCanvas(name?: string): HTMLCanvasElement;
 }
 
-const size = [15, 25];
+const size = [5, 50];
 const num = size[0] * size[1];
 
 const ms = new MarchingSquares(size[0], size[1], new VCR(num, num));
-// ms.printMap();
-// ms.generateBoundary(0);
-// ms.generateBoundary(0.5);
-// ms.printBoundary();
-
 const output = new CanvasRenderer(num, num);
 ms.print(output.getContext());
 
