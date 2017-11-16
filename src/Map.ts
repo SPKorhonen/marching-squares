@@ -1,35 +1,41 @@
 export default class Map {
-  cache: any = {};
-
-  constructor(public data: number[][]) { }
+  constructor(private data: number[][]) { }
 
   set(x: number, y: number, val: number) {
-    let key = x + '-' + y;
-    delete this.cache[key];
-    key = 'b' + x + '-' + y;
-    delete this.cache[key];
-
+    if (!this.data[y]) {
+      this.data[y] = [];
+    }
     this.data[y][x] = val;
   }
 
   get(x: number, y: number) {
-    const key = x + '-' + y;
-    if (!this.cache[key]) {
-      this.cache[key] = this.data[y] && this.data[y][x] || 0;
-    }
-    return this.cache[key];
+    return (this.data[y] && this.data[y][x]) || 0;
   }
 
-  getBinary(x: number, y: number, threshold: number = 0) {
-    const key = 'b' + x + '-' + y + '-' + threshold;
+  getRadius(xCenter: number, yCenter: number, radius: number): number[][] {
+    let points = [];
 
-    if (!this.data.hasOwnProperty(y.toString())) {
-      return 0;
+    for (let x = xCenter - radius; x <= xCenter; x++) {
+      for (let y = yCenter - radius; y <= yCenter; y++) {
+
+        if ((x - xCenter) * (x - xCenter) + (y - yCenter) * (y - yCenter) <= radius * radius) {
+          const xSym = xCenter - (x - xCenter);
+          const ySym = yCenter - (y - yCenter);
+
+          points = points.concat([
+            [x, y],
+            [x, ySym],
+            [xSym, y],
+            [xSym, ySym]
+          ]);
+        }
+      }
     }
 
-    if (!this.cache[key]) {
-      this.cache[key] = this.data[y] && this.data[y][x] >= threshold ? 1 : 0;
-    }
-    return this.cache[key];
+    return points;
+  }
+
+  getBinary(x: number, y: number, threshold: number = 1): number {
+    return (this.data[y] && this.data[y][x] >= threshold) ? 1 : 0;
   }
 }

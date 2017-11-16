@@ -7,30 +7,47 @@ interface VcrContext {
 }
 
 export default class VirtualCanvasRenderer implements Renderer {
-    contexts: any = {};
+    instances: any = {};
 
     static getRandomID(): string {
         return Math.random().toString(36).slice(2);
     }
 
-    public getContext(name: string): CanvasRenderingContext2D {
-        if (!this.contexts.hasOwnProperty(name)) {
-            const { canvas, context } = this.createNewContext();
-            this.contexts[name] = {
-                name,
-                canvas,
-                context,
-            };
+    constructor(private height: number, private width: number) { }
+
+    public getContext(name?: string): CanvasRenderingContext2D {
+        if (!this.instances.hasOwnProperty(name || 'main')) {
+            this.init(name || 'main');
         }
 
-        return this.contexts[name].context;
+        return this.instances[name || 'main'].context;
     }
 
-    private createNewContext() {
+    public getCanvas(name?: string): HTMLCanvasElement {
+        if (!this.instances.hasOwnProperty(name || 'main')) {
+            this.init(name || 'main');
+        }
+
+        return this.instances[name || 'main'].canvas;
+    }
+
+    private createNew() {
         const canvas = document.createElement('canvas');
+        canvas.setAttribute('height', `${this.height}px`);
+        canvas.setAttribute('width', `${this.width}px`);
         const context = canvas.getContext('2d');
 
         return {
+            canvas,
+            context,
+        };
+    }
+
+    private init(name: string) {
+        const { canvas, context } = this.createNew();
+
+        this.instances[name] = {
+            name,
             canvas,
             context,
         };

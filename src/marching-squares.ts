@@ -119,15 +119,19 @@ export default class MarchingSquares {
         return Math.sqrt(Math.pow(point2.x - point1.x, 2) + Math.pow(point2.y - point1.y, 2));
     }
 
-    getCellSize(): number {
+    public getCellSize(): number {
         return this.CELL_SIZE;
     }
 
-    getGridSize(): number {
+    public getGridSize(): number {
         return this.GRID_SIZE;
     }
 
-    generateMap() {
+    public getMap(): Map {
+        return this.map;
+    }
+
+    private generateMap() {
         const mapInner: number[][] = [];
         const halfPoint: number = Math.floor(this.GRID_SIZE / 2);
 
@@ -141,8 +145,8 @@ export default class MarchingSquares {
         this.map = new Map(mapInner);
     }
 
-    printMap() {
-        const mapContext = this.renderer.getContext('map');
+    public printMap(toContext?: CanvasRenderingContext2D) {
+        const mapContext = toContext || this.renderer.getContext('map');
         mapContext.fillStyle = 'white';
         mapContext.clearRect(0, 0, (this.GRID_SIZE + 1) * this.CELL_SIZE, (this.GRID_SIZE + 1) * this.CELL_SIZE);
 
@@ -167,6 +171,18 @@ export default class MarchingSquares {
         // inactive.forEach(pt => this.drawSquare(...pt));
     }
 
+    print(toContext: CanvasRenderingContext2D) {
+        if (typeof toContext !== 'undefined') {
+            toContext.clearRect(0, 0, this.getCellSize() * this.getGridSize(), this.getCellSize() * this.getGridSize());
+        }
+
+        this.printMap();
+        this.printBoundary(1);
+
+        toContext.drawImage(this.renderer.getCanvas('map'), 0, 0);
+        toContext.drawImage(this.renderer.getCanvas('boundary'), 0, 0);
+    }
+
     drawSquare(context: CanvasRenderingContext2D, ...points: number[]);
     drawSquare(context: CanvasRenderingContext2D, x, y) {
         context.fillRect(x * this.CELL_SIZE, y * this.CELL_SIZE, this.CELL_SIZE, this.CELL_SIZE);
@@ -181,8 +197,9 @@ export default class MarchingSquares {
         ];
     }
 
-    printBoundary(threshold: number = 1) {
-        const boundaryCtx = this.renderer.getContext('boundary');
+    public printBoundary(threshold: number = 1, toContext?: CanvasRenderingContext2D) {
+        const boundaryCtx = toContext || this.renderer.getContext('boundary');
+        boundaryCtx.clearRect(0, 0, (this.GRID_SIZE + 1) * this.CELL_SIZE, (this.GRID_SIZE + 1) * this.CELL_SIZE);
 
         let actions = [];
         boundaryCtx.strokeStyle = 'blue';

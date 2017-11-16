@@ -1,47 +1,76 @@
 import Map from './Map';
 import MarchingSquares from './marching-squares';
 import VCR from './vcr';
+import CanvasRenderer from './CanvasRenderer';
 
 export interface Renderer {
     getContext(name?: string): CanvasRenderingContext2D;
+    getCanvas(name?: string): HTMLCanvasElement;
 }
 
-const ms = new MarchingSquares(10, 50, new VCR());
-ms.printMap();
-// ms.printBoundary(0);
-// ms.printBoundary(0.5);
-ms.printBoundary();
+const size = [15, 25];
+const num = size[0] * size[1];
 
-// const canvas:any = document.querySelector('#ok');
-// canvas.setAttribute('width', '800px');
-// canvas.setAttribute('height', '800px');
+const ms = new MarchingSquares(size[0], size[1], new VCR(num, num));
+// ms.printMap();
+// ms.generateBoundary(0);
+// ms.generateBoundary(0.5);
+// ms.printBoundary();
 
-// let mouseDown = false;
-// canvas.addEventListener('mousedown', (evt)=>{
-//   mouseDown = true;
+const output = new CanvasRenderer(num, num);
+ms.print(output.getContext());
 
-//   const x = Math.round(evt.offsetX / ms.getCellSize());
-//   const y = Math.round(evt.offsetY / ms.getCellSize());
+const canvas: any = output.getCanvas();
 
-//   map.set(x, y, map.getBinary(x, y) === 1 ? 0 : 1);
-//   ms.clearBoundary();
-//   ms.printBoundary();
-// })
-// canvas.addEventListener('mouseup', ()=>{
-//   mouseDown = false;
-// })
-// canvas.addEventListener('mouseout', ()=>{
-//   mouseDown = false;
-// })
+let drawSize: number = 0;
+let mouseDown: boolean = false;
+let last: string;
+let mode: number = 0;
+canvas.addEventListener('mousedown', (evt) => {
+    mouseDown = true;
 
-// let last;
-// canvas.addEventListener('mousemove', (evt) =>{
-//   if (!mouseDown){ return; }
-//   const x = Math.round(evt.offsetX / SIZE);
-//   const y = Math.round(evt.offsetY / SIZE);
-//   if (last === `${x},${y}`){ return; }
+    const x = Math.round(evt.offsetX / ms.getCellSize());
+    const y = Math.round(evt.offsetY / ms.getCellSize());
+    const map = ms.getMap();
+    last = `${x},${y}`;
 
-//   map.set(x, y, map.getBinary(x, y) === 1 ? 0 : 1);
-//   last = `${x},${y}`;
-//   update();
-// });
+    const newValue = map.getBinary(x, y) ? 0 : 1;
+    // map.set(x, y, newValue);
+    mode = newValue;
+
+    map.getRadius(x, y, drawSize).forEach(pt => {
+        map.set(pt[0], pt[1], mode);
+    });
+
+    ms.print(output.getContext());
+});
+canvas.addEventListener('mouseup', () => {
+    mouseDown = false;
+});
+canvas.addEventListener('mouseout', () => {
+    mouseDown = false;
+});
+
+canvas.addEventListener('mousemove', (evt) => {
+    if (!mouseDown) { return; }
+    const x = Math.round(evt.offsetX / ms.getCellSize());
+    const y = Math.round(evt.offsetY / ms.getCellSize());
+    if (last === `${x},${y}`) { return; }
+
+    const map = ms.getMap();
+    map.getRadius(x, y, drawSize).forEach(pt => {
+        map.set(pt[0], pt[1], mode);
+    });
+
+    // map.set(x, y, mode);
+    last = `${x},${y}`;
+
+    ms.print(output.getContext());
+});
+
+document.body.addEventListener('wheel', evt => {
+    drawSize += evt.deltaY > 0 ? 1 : -1;
+    drawSize = Math.max(drawSize, 0);
+
+    console.log(drawSize);
+});
