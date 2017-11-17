@@ -2,37 +2,49 @@ import Map from './Map';
 import { Renderer } from './main';
 
 export default class MarchingSquares {
+    static lookupCache = {};
     static lookup(code, x, y) {
+        const key = `${code},${x},${y}`;
+        if (MarchingSquares.lookupCache[key]) {
+            return MarchingSquares.lookupCache[key];
+        }
+
+        let val = [];
         switch (code) {
             case '0000':
-                return [];
+                val = [];
 
+                break;
             case '0010':
-                return [
+                val = [
                     [x, y + 0.5],
                     [x + 0.5, y + 1],
                 ];
 
+                break;
             case '0001':
-                return [
+                val = [
                     [x + 0.5, y + 1],
                     [x + 1, y + 0.5],
                 ];
 
+                break;
             case '0011':
-                return [
+                val = [
                     [x, y + 0.5],
                     [x + 1, y + 0.5],
                 ];
 
+                break;
             case '0100':
-                return [
+                val = [
                     [x + 0.5, y],
                     [x + 1, y + 0.5],
                 ];
 
+                break;
             case '0110':
-                return [
+                val = [
                     [x, y + 0.5],
                     [x + 0.5, y],
 
@@ -40,32 +52,37 @@ export default class MarchingSquares {
                     [x + 1, y + 0.5],
                 ];
 
+                break;
             case '0101':
-                return [
+                val = [
                     [x + 0.5, y],
                     [x + 0.5, y + 1],
                 ];
 
+                break;
             case '0111':
-                return [
+                val = [
                     [x, y + 0.5],
                     [x + 0.5, y],
                 ];
 
+                break;
             case '1000':
-                return [
+                val = [
                     [x, y + 0.5],
                     [x + 0.5, y],
                 ];
 
+                break;
             case '1010':
-                return [
+                val = [
                     [x + 0.5, y],
                     [x + 0.5, y + 1],
                 ];
 
+                break;
             case '1001':
-                return [
+                val = [
                     [x + 0.5, y],
                     [x + 1, y + 0.5],
 
@@ -73,36 +90,44 @@ export default class MarchingSquares {
                     [x + 0.5, y + 1],
                 ];
 
+                break;
             case '1011':
-                return [
+                val = [
                     [x + 0.5, y],
                     [x + 1, y + 0.5],
                 ];
 
+                break;
             case '1100':
-                return [
+                val = [
                     [x, y + 0.5],
                     [x + 1, y + 0.5],
                 ];
 
+                break;
             case '1110':
-                return [
+                val = [
                     [x + 0.5, y + 1],
                     [x + 1, y + 0.5],
                 ];
 
+                break;
             case '1101':
-                return [
+                val = [
                     [x, y + 0.5],
                     [x + 0.5, y + 1]
                 ];
 
+                break;
             case '1111':
-                return [];
+                val = [];
 
             default:
-                return [];
+                val = [];
         }
+
+        MarchingSquares.lookupCache[key] = val;
+        return val;
     }
 
     private map: Map;
@@ -113,10 +138,30 @@ export default class MarchingSquares {
         private renderer: Renderer,
     ) {
         this.generateMap();
+        this.getAllMapPoints().forEach(pt => {
+            this.map.getRadius(pt[0], pt[1], 1);
+            this.map.getRadius(pt[0], pt[1], 2);
+            this.map.getRadius(pt[0], pt[1], 3);
+            this.map.getRadius(pt[0], pt[1], 4);
+            this.map.getRadius(pt[0], pt[1], 5);
+        });
     }
 
     static dist(point1: any, point2: any) {
         return Math.sqrt(Math.pow(point2.x - point1.x, 2) + Math.pow(point2.y - point1.y, 2));
+    }
+
+    static dedupe(array: number[][]) {
+        const found = {};
+        return array.filter(pt => {
+            const key = `${pt[0]},${pt[1]}`;
+            if (!found[key]) {
+                found[key] = true;
+                return true;
+            }
+
+            return false;
+        });
     }
 
     public getCellSize(): number {
@@ -190,16 +235,7 @@ export default class MarchingSquares {
             updatedPoints = actualPoints;
         }
 
-        const found = {};
-        updatedPoints = updatedPoints.filter(pt => {
-            const key = `${pt[0]},${pt[1]}`;
-            if (!found[key]) {
-                found[key] = true;
-                return true;
-            }
-
-            return false;
-        });
+        updatedPoints = MarchingSquares.dedupe(updatedPoints);
 
         if (updatedPoints.length) {
             this.printBoundary(updatedPoints, 1);
@@ -234,7 +270,7 @@ export default class MarchingSquares {
         return points;
     }
 
-    public printBoundary(inputPoints: any[], threshold: number = 1) {
+    public printBoundary(points: number[][], threshold: number = 1) {
         const boundaryCtx = this.renderer.getContext('boundary');
         // boundaryCtx.clearRect(
         //     0, 0, (this.GRID_SIZE + 1) * this.CELL_SIZE, (this.GRID_SIZE + 1) * this.CELL_SIZE
@@ -245,10 +281,6 @@ export default class MarchingSquares {
         boundaryCtx.fillStyle = 'rgba(0, 0, 255, 0.1)';
         boundaryCtx.beginPath();
 
-        let points = inputPoints;
-        // boundaryCtx.clearRect(x * this.CELL_SIZE, y * this.CELL_SIZE, this.CELL_SIZE, this.CELL_SIZE);
-
-        // this.map.flush().forEach(coords => { // - but it's already been flushed??
         points.forEach(coords => {
             const x = coords[0];
             const y = coords[1];
@@ -260,7 +292,6 @@ export default class MarchingSquares {
                 const start = act[i].map(z => (z + 0.5) * this.CELL_SIZE);
                 const end = act[i + 1].map(z => (z + 0.5) * this.CELL_SIZE);
 
-                // boundaryCtx.fillRect(start[0], end[1], this.CELL_SIZE, this.CELL_SIZE);
                 boundaryCtx.moveTo(start[0], start[1]);
                 boundaryCtx.lineTo(end[0], end[1]);
             }

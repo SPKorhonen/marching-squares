@@ -8,12 +8,13 @@ export interface Renderer {
     getCanvas(name?: string): HTMLCanvasElement;
 }
 
-const size = [5, 200];
+const size = [15, 100];
 const num = size[0] * size[1];
 
 const ms = new MarchingSquares(size[0], size[1], new VCR(num, num));
 const output = new CanvasRenderer(num, num);
-ms.print(output.getContext(), true);
+const outputContext = output.getContext();
+ms.print(outputContext, true);
 
 const canvas: any = output.getCanvas();
 
@@ -21,6 +22,18 @@ let drawSize: number = 0;
 let mouseDown: boolean = false;
 let last: string;
 let mode: number = 0;
+
+let shouldUpdate = false;
+
+const tick = () => {
+    if (shouldUpdate) {
+        ms.print(outputContext);
+        shouldUpdate = false;
+    }
+    requestAnimationFrame(tick);
+};
+tick();
+
 canvas.addEventListener('mousedown', (evt) => {
     mouseDown = true;
 
@@ -30,14 +43,13 @@ canvas.addEventListener('mousedown', (evt) => {
     last = `${x},${y}`;
 
     const newValue = map.getBinary(x, y) ? 0 : 1;
-    // map.set(x, y, newValue);
     mode = newValue;
 
     map.getRadius(x, y, drawSize).forEach(pt => {
         map.set(pt[0], pt[1], mode);
     });
 
-    ms.print(output.getContext());
+    shouldUpdate = true;
 });
 canvas.addEventListener('mouseup', () => {
     mouseDown = false;
@@ -58,7 +70,7 @@ canvas.addEventListener('mousemove', (evt) => {
     });
     last = `${x},${y}`;
 
-    ms.print(output.getContext());
+    shouldUpdate = true;
 });
 
 document.body.addEventListener('wheel', evt => {
