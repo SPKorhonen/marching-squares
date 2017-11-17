@@ -134,50 +134,76 @@ export default class MarchingSquares {
     private generateMap() {
         const mapInner: number[][] = [];
         const halfPoint: number = Math.floor(this.GRID_SIZE / 2);
+        this.map = new Map([]);
 
         for (let i = 0; i < this.GRID_SIZE; i += 1) {
             mapInner[i] = [];
             for (let j = 0; j < this.GRID_SIZE; j += 1) {
                 // mapInner[i][j] = MarchingSquares.dist({ x: halfPoint, y: halfPoint }, { x: i, y: j}) / 3;// Math.random() > 0.8 ? 1 : 0;
-                mapInner[i][j] = Math.random() > 0.8 ? 1 : 0;
+                this.map.set(i, j, Math.random() > 0.8 ? 1 : 0);
+                // mapInner[i][j] = Math.random() > 0.8 ? 1 : 0;
             }
         }
-        this.map = new Map(mapInner);
+
     }
 
-    public printMap(toContext?: CanvasRenderingContext2D) {
-        const mapContext = toContext || this.renderer.getContext('map');
-        mapContext.fillStyle = 'white';
-        mapContext.clearRect(0, 0, (this.GRID_SIZE + 1) * this.CELL_SIZE, (this.GRID_SIZE + 1) * this.CELL_SIZE);
+    public printMap(points: any[]) {
+        const mapContext = this.renderer.getContext('map');
+        mapContext.fillStyle = `rgba(255, 0, 0, 0.2)`;
 
         const active = [];
         const inactive = [];
-        for (let x = -1; x < this.GRID_SIZE + 1; x += 1) {
-            for (let y = -1; y < this.GRID_SIZE + 1; y += 1) {
-                const point = this.map.get(x, y);
-                if (point >= 1) {
-                    active.push([x, y, point]);
-                } else {
-                    inactive.push([x, y, point]);
-                }
-            }
-        }
 
-        active.forEach(pt => {
-            mapContext.fillStyle = `rgba(255,0,0,${pt[2] / (this.GRID_SIZE / 4)})`;
-            this.drawSquare(mapContext, ...pt);
+        points.forEach(coords => {
+            const x = coords[0];
+            const y = coords[1];
+            const value = this.map.get(x, y);
+
+            if (value >= 1) {
+                this.drawSquare(mapContext, x, y);
+            } else {
+                mapContext.clearRect(
+                    x * this.CELL_SIZE,
+                    y * this.CELL_SIZE,
+                    this.CELL_SIZE,
+                    this.CELL_SIZE
+                );
+            }
         });
-        // this.context.fillStyle = 'white';
-        // inactive.forEach(pt => this.drawSquare(...pt));
     }
 
-    print(toContext: CanvasRenderingContext2D) {
+    print(toContext: CanvasRenderingContext2D, force: boolean = false) {
         if (typeof toContext !== 'undefined') {
             toContext.clearRect(0, 0, this.getCellSize() * this.getGridSize(), this.getCellSize() * this.getGridSize());
         }
 
-        this.printMap();
-        this.printBoundary(1);
+        let updatedPoints = this.map.flush();
+        this.printMap(updatedPoints);
+
+        if (force && updatedPoints.length === 0) {
+            updatedPoints = this.getAllMapPoints();
+        } else if (updatedPoints.length < Math.pow(this.getGridSize(), 2)) {
+            let actualPoints = [];
+            updatedPoints.forEach(pt => {
+                actualPoints = actualPoints.concat(this.map.getRadius(pt[0] - 1, pt[1] - 1, 2));
+            });
+            updatedPoints = actualPoints;
+        }
+
+        const found = {};
+        updatedPoints = updatedPoints.filter(pt => {
+            const key = `${pt[0]},${pt[1]}`;
+            if (!found[key]) {
+                found[key] = true;
+                return true;
+            }
+
+            return false;
+        });
+
+        if (updatedPoints.length) {
+            this.printBoundary(updatedPoints, 1);
+        }
 
         toContext.drawImage(this.renderer.getCanvas('map'), 0, 0);
         toContext.drawImage(this.renderer.getCanvas('boundary'), 0, 0);
@@ -185,6 +211,7 @@ export default class MarchingSquares {
 
     drawSquare(context: CanvasRenderingContext2D, ...points: number[]);
     drawSquare(context: CanvasRenderingContext2D, x, y) {
+        context.clearRect(x * this.CELL_SIZE, y * this.CELL_SIZE, this.CELL_SIZE, this.CELL_SIZE);
         context.fillRect(x * this.CELL_SIZE, y * this.CELL_SIZE, this.CELL_SIZE, this.CELL_SIZE);
     }
 
@@ -197,29 +224,48 @@ export default class MarchingSquares {
         ];
     }
 
-    public printBoundary(threshold: number = 1, toContext?: CanvasRenderingContext2D) {
-        const boundaryCtx = toContext || this.renderer.getContext('boundary');
-        boundaryCtx.clearRect(0, 0, (this.GRID_SIZE + 1) * this.CELL_SIZE, (this.GRID_SIZE + 1) * this.CELL_SIZE);
+    private getAllMapPoints(): number[][] {
+        const points = [];
+        for (let x = -1; x < this.GRID_SIZE + 1; x += 1) {
+            for (let y = -1; y < this.GRID_SIZE + 1; y += 1) {
+                points.push([x, y]);
+            }
+        }
+        return points;
+    }
+
+    public printBoundary(inputPoints: any[], threshold: number = 1) {
+        const boundaryCtx = this.renderer.getContext('boundary');
+        // boundaryCtx.clearRect(
+        //     0, 0, (this.GRID_SIZE + 1) * this.CELL_SIZE, (this.GRID_SIZE + 1) * this.CELL_SIZE
+        // );
 
         let actions = [];
         boundaryCtx.strokeStyle = 'blue';
-        boundaryCtx.fillStyle = 'rgba(0,0,255,0.1)';
+        boundaryCtx.fillStyle = 'rgba(0, 0, 255, 0.1)';
         boundaryCtx.beginPath();
 
-        for (let x = -1; x < this.GRID_SIZE + 1; x += 1) {
-            for (let y = -1; y < this.GRID_SIZE + 1; y += 1) {
-                const set = this.getFourCorners(x, y, threshold).join('');
-                const act = MarchingSquares.lookup(set, x, y);
+        let points = inputPoints;
+        // boundaryCtx.clearRect(x * this.CELL_SIZE, y * this.CELL_SIZE, this.CELL_SIZE, this.CELL_SIZE);
 
-                for (let i = 0; i < act.length; i += 2) {
-                    const start = act[i + 0].map(z => (z + 0.5) * this.CELL_SIZE);
-                    const end = act[i + 1].map(z => (z + 0.5) * this.CELL_SIZE);
+        // this.map.flush().forEach(coords => { // - but it's already been flushed??
+        points.forEach(coords => {
+            const x = coords[0];
+            const y = coords[1];
+            const set = this.getFourCorners(x, y, threshold).join('');
+            const act = MarchingSquares.lookup(set, x, y);
 
-                    boundaryCtx.moveTo(start[0], start[1]);
-                    boundaryCtx.lineTo(end[0], end[1]);
-                }
+            boundaryCtx.clearRect((x + 0.5) * this.CELL_SIZE, (y + 0.5) * this.CELL_SIZE, this.CELL_SIZE + 0.5, this.CELL_SIZE + 0.5);
+            for (let i = 0; i < act.length; i += 2) {
+                const start = act[i].map(z => (z + 0.5) * this.CELL_SIZE);
+                const end = act[i + 1].map(z => (z + 0.5) * this.CELL_SIZE);
+
+                // boundaryCtx.fillRect(start[0], end[1], this.CELL_SIZE, this.CELL_SIZE);
+                boundaryCtx.moveTo(start[0], start[1]);
+                boundaryCtx.lineTo(end[0], end[1]);
             }
-        }
+        });
+
         boundaryCtx.stroke();
         boundaryCtx.closePath();
     }

@@ -8,12 +8,12 @@ export interface Renderer {
     getCanvas(name?: string): HTMLCanvasElement;
 }
 
-const size = [5, 50];
+const size = [5, 200];
 const num = size[0] * size[1];
 
 const ms = new MarchingSquares(size[0], size[1], new VCR(num, num));
 const output = new CanvasRenderer(num, num);
-ms.print(output.getContext());
+ms.print(output.getContext(), true);
 
 const canvas: any = output.getCanvas();
 
@@ -56,8 +56,6 @@ canvas.addEventListener('mousemove', (evt) => {
     map.getRadius(x, y, drawSize).forEach(pt => {
         map.set(pt[0], pt[1], mode);
     });
-
-    // map.set(x, y, mode);
     last = `${x},${y}`;
 
     ms.print(output.getContext());
@@ -65,7 +63,7 @@ canvas.addEventListener('mousemove', (evt) => {
 
 document.body.addEventListener('wheel', evt => {
     drawSize += evt.deltaY > 0 ? 1 : -1;
-    drawSize = Math.max(drawSize, 0);
+    drawSize = Math.min(Math.max(drawSize, 0), 5);
 
     console.log(drawSize);
 });

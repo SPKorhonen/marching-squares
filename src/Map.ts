@@ -1,11 +1,28 @@
+declare var Object: any;
+
 export default class Map {
-  constructor(private data: number[][]) { }
+  private dirty: any;
+
+  constructor(private data: number[][]) {
+    this.dirty = {};
+  }
+
+  flush() {
+    const vals = Object.keys(this.dirty);
+    this.dirty = {};
+
+    return vals.map(dirt => dirt.split(',').map(x => parseInt(x, 10)));
+  }
 
   set(x: number, y: number, val: number) {
     if (!this.data[y]) {
       this.data[y] = [];
+    } else if (this.data[y][x] === val) {
+      return;
     }
+
     this.data[y][x] = val;
+    this.dirty[`${x},${y}`] = true;
   }
 
   get(x: number, y: number) {

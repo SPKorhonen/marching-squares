@@ -1,3 +1,5 @@
+// todo: uglify - https://github.com/webpack-contrib/uglifyjs-webpack-plugin
+
 const path = require('path');
 const webpack = require('webpack');
 
@@ -10,7 +12,7 @@ module.exports = {
     entry: {
         'main': './main.ts'
     },
-    
+
     output: {
         filename: '[name].bundle.js',
         path: DESTINATION
