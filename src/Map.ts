@@ -8,7 +8,14 @@ export default class Map {
   }
 
   flush() {
-    const vals = Array.from(this.dirty);
+    let vals = [];
+    const entries = this.dirty.entries();
+    let entry = entries.next();
+
+    while (entry.value) {
+      vals.push(entry.value[0]);
+      entry = entries.next();
+    }
     this.dirty = new Set();
 
     return vals.map(x => x.split(',').map(y => parseInt(y, 10)));

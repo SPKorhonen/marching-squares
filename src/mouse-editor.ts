@@ -22,6 +22,8 @@ export default class MouseEditor extends Emitter implements CanvasPrintable {
     context: CanvasRenderingContext2D;
     canvas: HTMLCanvasElement;
 
+    lastDimensions: number[] = [0, 0, 0, 0];
+
     constructor(private ms: MarchingSquares, private output: HTMLCanvasElement) {
         super();
         const size = ms.getCellSize() * ms.getGridSize();
@@ -70,11 +72,9 @@ export default class MouseEditor extends Emitter implements CanvasPrintable {
     private updateSelectionHighlight(evt: MouseEvent): void {
         const cellSize = this.ms.getCellSize();
         const gridSize = this.ms.getGridSize();
-        const x = Math.round((evt.offsetX / cellSize) - 0.5);
-        const y = Math.round((evt.offsetY / cellSize) - 0.5);
 
-        this.selectionX = x;
-        this.selectionY = y;
+        this.selectionX = Math.round((evt.offsetX / cellSize) - 0.5);
+        this.selectionY = Math.round((evt.offsetY / cellSize) - 0.5);
 
         this.emit('update');
     }
@@ -109,16 +109,29 @@ export default class MouseEditor extends Emitter implements CanvasPrintable {
         const x = this.selectionX;
         const y = this.selectionY;
 
-        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.context.clearRect(
+            this.lastDimensions[0],
+            this.lastDimensions[1],
+            this.lastDimensions[2],
+            this.lastDimensions[3],
+        );
 
         if ((x | y) !== -1) {
-            this.context.fillRect(
+            this.lastDimensions = [
                 (x - this.drawSize / 2) * cellSize,
                 (y - this.drawSize / 2) * cellSize,
                 cellSize * (this.drawSize + 1),
                 cellSize * (this.drawSize + 1)
+            ];
+
+            this.context.fillRect(
+                this.lastDimensions[0],
+                this.lastDimensions[1],
+                this.lastDimensions[2],
+                this.lastDimensions[3],
             );
         }
+
 
         toContext.drawImage(this.canvas, 0, 0);
     }

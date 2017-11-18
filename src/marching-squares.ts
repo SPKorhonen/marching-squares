@@ -140,13 +140,13 @@ export default class MarchingSquares implements CanvasPrintable {
         private GRID_SIZE: number = 25,
     ) {
         this.generateMap();
-        this.getAllMapPoints().forEach(pt => {
-            getRadiusCoords(pt[0], pt[1], 1);
-            getRadiusCoords(pt[0], pt[1], 2);
-            getRadiusCoords(pt[0], pt[1], 3);
-            getRadiusCoords(pt[0], pt[1], 4);
-            getRadiusCoords(pt[0], pt[1], 5);
-        });
+        // this.getAllMapPoints().forEach(pt => {
+        //     getRadiusCoords(pt[0], pt[1], 1);
+        //     getRadiusCoords(pt[0], pt[1], 2);
+        //     getRadiusCoords(pt[0], pt[1], 3);
+        //     getRadiusCoords(pt[0], pt[1], 4);
+        //     getRadiusCoords(pt[0], pt[1], 5);
+        // });
     }
 
     // static dist(point1: any, point2: any) {
@@ -202,11 +202,16 @@ export default class MarchingSquares implements CanvasPrintable {
     public printMap(points: any[]) {
         const mapContext = this.renderer.getContext('map');
         mapContext.fillStyle = `rgba(255, 0, 0, 0.2)`;
+        let coords: number[];
+        let x: number;
+        let y: number;
+        let value: number;
 
-        points.forEach(coords => {
-            const x = coords[0];
-            const y = coords[1];
-            const value = this.map.get(x, y);
+        for (let i = 0; i < points.length; i += 1) {
+            coords = points[i];
+            x = coords[0];
+            y = coords[1];
+            value = this.map.get(x, y);
 
             if (value >= 1) {
                 this.drawSquare(mapContext, x, y);
@@ -218,7 +223,7 @@ export default class MarchingSquares implements CanvasPrintable {
                     this.CELL_SIZE
                 );
             }
-        });
+        }
     }
 
     print(toContext: CanvasRenderingContext2D, force: boolean = false) {
@@ -227,11 +232,10 @@ export default class MarchingSquares implements CanvasPrintable {
         }
 
         let updatedPoints = this.map.flush();
-        this.printMap(updatedPoints);
 
         if (force && updatedPoints.length === 0) {
             updatedPoints = this.getAllMapPoints();
-        } else if (updatedPoints.length < Math.pow(this.getGridSize(), 2)) {
+        } else if (updatedPoints.length > 0 && updatedPoints.length < Math.pow(this.getGridSize(), 2)) {
             let actualPoints = [];
             updatedPoints.forEach(pt => {
                 actualPoints = actualPoints.concat(getRadiusCoords(pt[0] - 1, pt[1] - 1, 2));
@@ -242,6 +246,7 @@ export default class MarchingSquares implements CanvasPrintable {
         updatedPoints = MarchingSquares.dedupe(updatedPoints);
 
         if (updatedPoints.length) {
+            this.printMap(updatedPoints);
             this.printBoundary(updatedPoints, 1);
         }
 

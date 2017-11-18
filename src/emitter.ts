@@ -11,12 +11,9 @@ export default class Emitter {
     }
 
     protected emit(eventName: string, ...data: any[]): void {
-        if (this.triggeredFlags[eventName]) { return; }
-        this.triggeredFlags[eventName] = true;
-
-        requestAnimationFrame(() => {
-            (this.bindings[eventName] || []).forEach(act => act(...data));
-            delete this.triggeredFlags[eventName];
-        });
+        const acts: Function[] = this.bindings[eventName] || [];
+        for (let i = acts.length - 1; i >= 0; i -= 1) {
+            acts[i](...data);
+        }
     }
 }

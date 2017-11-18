@@ -58,5 +58,5 @@ export class MarchingSquaresApp {
 }
 
 document.body.innerHTML = '';
-const app = new MarchingSquaresApp(25, 100);
+const app = new MarchingSquaresApp(5, 200);
 
