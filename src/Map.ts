@@ -13,12 +13,12 @@ export default class Map {
     let entry = entries.next();
 
     while (entry.value) {
-      vals.push(entry.value[0]);
+      vals.push(entry.value[0].split(',').map(y => parseInt(y, 10)));
       entry = entries.next();
     }
     this.dirty = new Set();
 
-    return vals.map(x => x.split(',').map(y => parseInt(y, 10)));
+    return vals;
   }
 
   set(x: number, y: number, val: number) {

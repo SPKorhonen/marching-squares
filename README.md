@@ -18,3 +18,4 @@ TODO:
 - [ ] A* pathfinding
 - [ ] AI?
 - [ ] poisson-disc for drawing maps?
+- [ ] web workers to process large map alterations

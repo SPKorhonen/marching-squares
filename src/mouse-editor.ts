@@ -96,9 +96,13 @@ export default class MouseEditor extends Emitter implements CanvasPrintable {
         const key = `${x},${y},${this.mode}`;
         if (this.last === key) { return; }
 
-        getRadiusCoords(x, y, this.drawSize).forEach(pt => {
+        const coords: number[][] = getRadiusCoords(x, y, this.drawSize);
+        let pt: number[];
+
+        for (let i = coords.length - 1; i >= 0; i -= 1) {
+            pt = coords[i];
             this.map.set(pt[0], pt[1], this.mode);
-        });
+        }
         this.last = key;
 
         this.emit('update');
@@ -109,11 +113,15 @@ export default class MouseEditor extends Emitter implements CanvasPrintable {
         const x = this.selectionX;
         const y = this.selectionY;
 
+
+        // if we don't grow the `clearRect` size a little bit,
+        // bits of remnant rects remain behind.
+        const padding = cellSize;
         this.context.clearRect(
-            this.lastDimensions[0],
-            this.lastDimensions[1],
-            this.lastDimensions[2],
-            this.lastDimensions[3],
+            this.lastDimensions[0] - (padding / 2),
+            this.lastDimensions[1] - (padding / 2),
+            this.lastDimensions[2] + padding,
+            this.lastDimensions[3] + padding,
         );
 
         if ((x | y) !== -1) {
@@ -131,7 +139,6 @@ export default class MouseEditor extends Emitter implements CanvasPrintable {
                 this.lastDimensions[3],
             );
         }
-
 
         toContext.drawImage(this.canvas, 0, 0);
     }

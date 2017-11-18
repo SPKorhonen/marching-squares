@@ -37,13 +37,14 @@ export class MarchingSquaresApp {
         return new MarchingSquares(virtualRenderer, this.cellSize, this.gridSize);
     }
 
+    toggleUpdateFlag(val: boolean): void {
+        this.shouldUpdate = val;
+    }
+
     createMouseEditor(): MouseEditor {
         const me = new MouseEditor(this.instance, this.pipeline.getCanvas());
-        // this.pipeline.addRenderer(me);
 
-        me.on('update', () => {
-            this.shouldUpdate = true;
-        });
+        me.on('update', this.toggleUpdateFlag.bind(this, true));
 
         return me;
     }
@@ -58,5 +59,4 @@ export class MarchingSquaresApp {
 }
 
 document.body.innerHTML = '';
-const app = new MarchingSquaresApp(5, 200);
-
+const app = new MarchingSquaresApp(15, 50);

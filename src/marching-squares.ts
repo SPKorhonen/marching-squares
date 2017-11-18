@@ -159,12 +159,12 @@ export default class MarchingSquares implements CanvasPrintable {
         let key;
         let pt;
 
-        for (let i = 0; i < array.length; i += 1) {
+        for (let i = array.length - 1; i >= 0; i -= 1) {
             pt = array[i];
             key = `${pt[0]},${pt[1]}`;
             if (!found[key]) {
                 found[key] = true;
-                newArray.push(pt);
+                newArray.unshift(pt);
             }
         }
 
@@ -188,7 +188,7 @@ export default class MarchingSquares implements CanvasPrintable {
         // const halfPoint: number = Math.floor(this.GRID_SIZE / 2);
         this.map = new Map([]);
 
-        for (let i = 0; i < this.GRID_SIZE; i += 1) {
+        for (let i = this.GRID_SIZE - 1; i >= 0; i -= 1) {
             mapInner[i] = [];
             for (let j = 0; j < this.GRID_SIZE; j += 1) {
                 // mapInner[i][j] = MarchingSquares.dist({ x: halfPoint, y: halfPoint }, { x: i, y: j}) / 3;// Math.random() > 0.8 ? 1 : 0;
@@ -207,7 +207,7 @@ export default class MarchingSquares implements CanvasPrintable {
         let y: number;
         let value: number;
 
-        for (let i = 0; i < points.length; i += 1) {
+        for (let i = points.length - 1; i >= 0; i -= 1) {
             coords = points[i];
             x = coords[0];
             y = coords[1];
@@ -237,9 +237,11 @@ export default class MarchingSquares implements CanvasPrintable {
             updatedPoints = this.getAllMapPoints();
         } else if (updatedPoints.length > 0 && updatedPoints.length < Math.pow(this.getGridSize(), 2)) {
             let actualPoints = [];
-            updatedPoints.forEach(pt => {
+            let pt;
+            for (let i = updatedPoints.length - 1; i >= 0; i -= 1) {
+                pt = updatedPoints[i];
                 actualPoints = actualPoints.concat(getRadiusCoords(pt[0] - 1, pt[1] - 1, 2));
-            });
+            }
             updatedPoints = actualPoints;
         }
 
@@ -285,25 +287,34 @@ export default class MarchingSquares implements CanvasPrintable {
         //     0, 0, (this.GRID_SIZE + 1) * this.CELL_SIZE, (this.GRID_SIZE + 1) * this.CELL_SIZE
         // );
 
-        boundaryCtx.strokeStyle = 'blue';
-        boundaryCtx.fillStyle = 'rgba(0, 0, 255, 0.1)';
+        // boundaryCtx.strokeStyle = 'black';
+        boundaryCtx.lineWidth = (0.067073 * this.CELL_SIZE) + 0.530488;
+        // boundaryCtx.fillStyle = 'rgba(0, 0, 255, 0.1)';
         boundaryCtx.beginPath();
 
-        points.forEach(coords => {
-            const x = coords[0];
-            const y = coords[1];
-            const set = this.getFourCorners(x, y, threshold).join('');
-            const act = MarchingSquares.lookup(set, x, y);
+        let coords: number[];
+        let x: number;
+        let y: number;
+        let cornersCode: string;
+        let act: number[][];
+
+        for (let i = points.length - 1; i >= 0; i -= 1) {
+            coords = points[i];
+            x = coords[0];
+            y = coords[1];
+            cornersCode = this.getFourCorners(x, y, threshold).join('');
+            act = MarchingSquares.lookup(cornersCode, x, y);
 
             boundaryCtx.clearRect((x + 0.5) * this.CELL_SIZE, (y + 0.5) * this.CELL_SIZE, this.CELL_SIZE + 0.5, this.CELL_SIZE + 0.5);
-            for (let i = 0; i < act.length; i += 2) {
-                const start = act[i].map(z => (z + 0.5) * this.CELL_SIZE);
-                const end = act[i + 1].map(z => (z + 0.5) * this.CELL_SIZE);
+
+            for (let i = act.length - 1; i >= 0; i -= 2) {
+                const start = act[i - 1].map(z => (z + 0.5) * this.CELL_SIZE);
+                const end = act[i].map(z => (z + 0.5) * this.CELL_SIZE);
 
                 boundaryCtx.moveTo(start[0], start[1]);
                 boundaryCtx.lineTo(end[0], end[1]);
             }
-        });
+        }
 
         boundaryCtx.stroke();
         boundaryCtx.closePath();

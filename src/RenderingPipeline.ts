@@ -21,14 +21,15 @@ export default class RenderingPipeline {
     }
 
     public addRenderer(renderer: CanvasPrintable): void {
-        this.renderers.push(renderer);
+        this.renderers.unshift(renderer);
     }
 
     public update(): void {
-        this.renderers.forEach((renderer: CanvasPrintable) => {
-            requestAnimationFrame(() => {
-                renderer.print(this.outputContext);
-            });
-        });
+        const all = this.renderers;
+        let renderer: CanvasPrintable;
+
+        for (let i = all.length - 1; i >= 0; i -= 1) {
+            all[i].print(this.outputContext);
+        }
     }
 }
