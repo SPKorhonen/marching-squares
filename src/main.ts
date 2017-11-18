@@ -1,83 +1,62 @@
 import Map from './Map';
 import MarchingSquares from './marching-squares';
 import VCR from './vcr';
-import CanvasRenderer from './CanvasRenderer';
+import MouseEditor from './mouse-editor';
+import RenderingPipeline from './RenderingPipeline';
 
 export interface Renderer {
     getContext(name?: string): CanvasRenderingContext2D;
     getCanvas(name?: string): HTMLCanvasElement;
 }
 
-document.body.innerHTML = '';
+export class MarchingSquaresApp {
+    shouldUpdate: boolean = false;
+    instance: MarchingSquares;
 
-const size = [15, 100];
-const num = size[0] * size[1];
+    pipeline: RenderingPipeline;
 
-const ms = new MarchingSquares(size[0], size[1], new VCR(num, num));
-const output = new CanvasRenderer(num, num);
-const outputContext = output.getContext();
-ms.print(outputContext, true);
+    constructor(private cellSize: number = 10, private gridSize: number = 15) {
+        this.pipeline = new RenderingPipeline();
+        const totalCellCount = this.cellSize * this.gridSize;
+        this.pipeline.createCanvas(totalCellCount, totalCellCount);
 
-const canvas: any = output.getCanvas();
+        this.instance = this.createMarchingInstance();
+        this.pipeline.addRenderer(this.instance);
 
-let drawSize: number = 0;
-let mouseDown: boolean = false;
-let last: string;
-let mode: number = 0;
+        const editor = this.createMouseEditor();
+        this.pipeline.addRenderer(editor);
 
-let shouldUpdate = false;
-
-const tick = () => {
-    if (shouldUpdate) {
-        ms.print(outputContext);
-        shouldUpdate = false;
+        this.pipeline.update();
+        this.tick = this.tick.bind(this);
+        this.tick();
     }
-    requestAnimationFrame(tick);
-};
-tick();
 
-canvas.addEventListener('mousedown', (evt) => {
-    mouseDown = true;
+    createMarchingInstance(): MarchingSquares {
+        const totalCellCount = this.cellSize * this.gridSize;
+        const virtualRenderer = new VCR(totalCellCount, totalCellCount);
+        return new MarchingSquares(virtualRenderer, this.cellSize, this.gridSize);
+    }
 
-    const x = Math.round(evt.offsetX / ms.getCellSize());
-    const y = Math.round(evt.offsetY / ms.getCellSize());
-    const map = ms.getMap();
-    last = `${x},${y}`;
+    createMouseEditor(): MouseEditor {
+        const me = new MouseEditor(this.instance, this.pipeline.getCanvas());
+        // this.pipeline.addRenderer(me);
 
-    const newValue = map.getBinary(x, y) ? 0 : 1;
-    mode = newValue;
+        me.on('update', () => {
+            this.shouldUpdate = true;
+        });
 
-    map.getRadius(x, y, drawSize).forEach(pt => {
-        map.set(pt[0], pt[1], mode);
-    });
+        return me;
+    }
 
-    shouldUpdate = true;
-});
-canvas.addEventListener('mouseup', () => {
-    mouseDown = false;
-});
-canvas.addEventListener('mouseout', () => {
-    mouseDown = false;
-});
+    tick() {
+        if (this.shouldUpdate) {
+            this.pipeline.update();
+            this.shouldUpdate = false;
+        }
+        requestAnimationFrame(this.tick);
+    }
+}
 
-canvas.addEventListener('mousemove', (evt) => {
-    if (!mouseDown) { return; }
-    const x = Math.round(evt.offsetX / ms.getCellSize());
-    const y = Math.round(evt.offsetY / ms.getCellSize());
-    if (last === `${x},${y}`) { return; }
+document.body.innerHTML = '';
+const app = new MarchingSquaresApp(25, 100);
 
-    const map = ms.getMap();
-    map.getRadius(x, y, drawSize).forEach(pt => {
-        map.set(pt[0], pt[1], mode);
-    });
-    last = `${x},${y}`;
-
-    shouldUpdate = true;
-});
-
-document.body.addEventListener('wheel', evt => {
-    drawSize += evt.deltaY > 0 ? 1 : -1;
-    drawSize = Math.min(Math.max(drawSize, 0), 5);
-
-    // console.log(drawSize);
-});

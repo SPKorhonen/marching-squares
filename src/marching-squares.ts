@@ -1,7 +1,9 @@
 import Map from './Map';
 import { Renderer } from './main';
+import { getRadiusCoords } from './coord-utils';
+import { CanvasPrintable } from './canvas-printable';
 
-export default class MarchingSquares {
+export default class MarchingSquares implements CanvasPrintable {
     static lookupCache = {};
     static lookup(code, x, y) {
         const key = `${code},${x},${y}`;
@@ -133,17 +135,17 @@ export default class MarchingSquares {
     private map: Map;
 
     constructor(
+        public renderer: Renderer,
         private CELL_SIZE: number = 20,
         private GRID_SIZE: number = 25,
-        private renderer: Renderer,
     ) {
         this.generateMap();
         this.getAllMapPoints().forEach(pt => {
-            this.map.getRadius(pt[0], pt[1], 1);
-            this.map.getRadius(pt[0], pt[1], 2);
-            this.map.getRadius(pt[0], pt[1], 3);
-            this.map.getRadius(pt[0], pt[1], 4);
-            this.map.getRadius(pt[0], pt[1], 5);
+            getRadiusCoords(pt[0], pt[1], 1);
+            getRadiusCoords(pt[0], pt[1], 2);
+            getRadiusCoords(pt[0], pt[1], 3);
+            getRadiusCoords(pt[0], pt[1], 4);
+            getRadiusCoords(pt[0], pt[1], 5);
         });
     }
 
@@ -153,15 +155,20 @@ export default class MarchingSquares {
 
     static dedupe(array: number[][]) {
         const found = {};
-        return array.filter(pt => {
-            const key = `${pt[0]},${pt[1]}`;
+        let newArray = [];
+        let key;
+        let pt;
+
+        for (let i = 0; i < array.length; i += 1) {
+            pt = array[i];
+            key = `${pt[0]},${pt[1]}`;
             if (!found[key]) {
                 found[key] = true;
-                return true;
+                newArray.push(pt);
             }
+        }
 
-            return false;
-        });
+        return newArray;
     }
 
     public getCellSize(): number {
@@ -227,7 +234,7 @@ export default class MarchingSquares {
         } else if (updatedPoints.length < Math.pow(this.getGridSize(), 2)) {
             let actualPoints = [];
             updatedPoints.forEach(pt => {
-                actualPoints = actualPoints.concat(this.map.getRadius(pt[0] - 1, pt[1] - 1, 2));
+                actualPoints = actualPoints.concat(getRadiusCoords(pt[0] - 1, pt[1] - 1, 2));
             });
             updatedPoints = actualPoints;
         }

@@ -4,6 +4,7 @@ const path = require('path');
 const webpack = require('webpack');
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
 
+const isProdBuild = process.argv.indexOf("-p") !== -1;
 const ROOT = path.resolve(__dirname, 'src');
 const DESTINATION = path.resolve(__dirname, 'dist');
 
@@ -57,7 +58,7 @@ module.exports = {
 
     devtool: 'cheap-module-source-map',
     devServer: {},
-    plugins: [
+    plugins: isProdBuild ? [
         new UglifyJsPlugin({
             uglifyOptions: {
                 ie8: false,
@@ -71,6 +72,6 @@ module.exports = {
                 warnings: true
             }
         })
-    ]
+    ] : []
 };
 

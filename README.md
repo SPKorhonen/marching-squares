@@ -15,3 +15,6 @@ TODO:
 - [ ] Camera zoom/offset
 - [ ] Physics/collision detection
 - [ ] Explosions!
+- [ ] A* pathfinding
+- [ ] AI?
+- [ ] poisson-disc for drawing maps?
