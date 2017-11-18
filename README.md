@@ -9,9 +9,9 @@ TODO:
 - [x] Basic algorithm
 - [x] Mouse-based editing
 - [x] Scrollwheel-based pen resizing (scroll up = bigger pen, scroll down = smaller pen)
-- [ ] Local map alterations (currently, altering a block at (50, 50) redraws the entire grid)
-  - [ ] Map dirty flags
-  - [ ] Clear only affected area
+- [x] Local map alterations (currently, altering a block at (50, 50) redraws the entire grid)
+  - [x] Map dirty flags
+  - [x] Clear only affected area
 - [ ] Camera zoom/offset
 - [ ] Physics/collision detection
 - [ ] Explosions!

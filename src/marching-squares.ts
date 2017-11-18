@@ -147,9 +147,9 @@ export default class MarchingSquares {
         });
     }
 
-    static dist(point1: any, point2: any) {
-        return Math.sqrt(Math.pow(point2.x - point1.x, 2) + Math.pow(point2.y - point1.y, 2));
-    }
+    // static dist(point1: any, point2: any) {
+    //     return Math.sqrt(Math.pow(point2.x - point1.x, 2) + Math.pow(point2.y - point1.y, 2));
+    // }
 
     static dedupe(array: number[][]) {
         const found = {};
@@ -178,7 +178,7 @@ export default class MarchingSquares {
 
     private generateMap() {
         const mapInner: number[][] = [];
-        const halfPoint: number = Math.floor(this.GRID_SIZE / 2);
+        // const halfPoint: number = Math.floor(this.GRID_SIZE / 2);
         this.map = new Map([]);
 
         for (let i = 0; i < this.GRID_SIZE; i += 1) {
@@ -195,9 +195,6 @@ export default class MarchingSquares {
     public printMap(points: any[]) {
         const mapContext = this.renderer.getContext('map');
         mapContext.fillStyle = `rgba(255, 0, 0, 0.2)`;
-
-        const active = [];
-        const inactive = [];
 
         points.forEach(coords => {
             const x = coords[0];
@@ -276,7 +273,6 @@ export default class MarchingSquares {
         //     0, 0, (this.GRID_SIZE + 1) * this.CELL_SIZE, (this.GRID_SIZE + 1) * this.CELL_SIZE
         // );
 
-        let actions = [];
         boundaryCtx.strokeStyle = 'blue';
         boundaryCtx.fillStyle = 'rgba(0, 0, 255, 0.1)';
         boundaryCtx.beginPath();

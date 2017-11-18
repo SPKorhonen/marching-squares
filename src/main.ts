@@ -8,6 +8,8 @@ export interface Renderer {
     getCanvas(name?: string): HTMLCanvasElement;
 }
 
+document.body.innerHTML = '';
+
 const size = [15, 100];
 const num = size[0] * size[1];
 
@@ -77,5 +79,5 @@ document.body.addEventListener('wheel', evt => {
     drawSize += evt.deltaY > 0 ? 1 : -1;
     drawSize = Math.min(Math.max(drawSize, 0), 5);
 
-    console.log(drawSize);
+    // console.log(drawSize);
 });

@@ -2,9 +2,10 @@
 
 const path = require('path');
 const webpack = require('webpack');
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
 
-const ROOT = path.resolve( __dirname, 'src' );
-const DESTINATION = path.resolve( __dirname, 'dist' );
+const ROOT = path.resolve(__dirname, 'src');
+const DESTINATION = path.resolve(__dirname, 'dist');
 
 module.exports = {
     context: ROOT,
@@ -48,13 +49,28 @@ module.exports = {
             *****************/
             {
                 test: /\.ts$/,
-                exclude: [ /node_modules/ ],
+                exclude: [/node_modules/],
                 use: 'awesome-typescript-loader'
             }
         ]
     },
 
     devtool: 'cheap-module-source-map',
-    devServer: {}
+    devServer: {},
+    plugins: [
+        new UglifyJsPlugin({
+            uglifyOptions: {
+                ie8: false,
+                ecma: 5,
+                mangle: true,
+                output: {
+                    comments: false,
+                    beautify: false,
+                },
+                compress: true,
+                warnings: true
+            }
+        })
+    ]
 };
 
