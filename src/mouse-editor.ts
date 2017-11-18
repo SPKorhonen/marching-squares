@@ -3,7 +3,8 @@ import MarchingSquares from './marching-squares';
 import { getRadiusCoords } from './coord-utils';
 import VCR from './vcr';
 import { CanvasPrintable } from './canvas-printable';
-import Map from './Map';
+import Map, { MarchableSpace } from './Map';
+import QuadTree from './QuadTree';
 
 export default class MouseEditor extends Emitter implements CanvasPrintable {
     static MIN_SIZE: number = 0;
@@ -13,7 +14,7 @@ export default class MouseEditor extends Emitter implements CanvasPrintable {
     isActive: boolean = false;
     last: string;
     mode: number = 0;
-    map: Map;
+    map: MarchableSpace;
     renderer: VCR;
 
     selectionX: number = -1;

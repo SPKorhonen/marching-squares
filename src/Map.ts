@@ -1,13 +1,20 @@
 declare var Object: any;
 
-export default class Map {
+export interface MarchableSpace {
+  flush(): number[][];
+  get(x: number, y: number): number;
+  getBinary(x: number, y: number, threshold: number): number;
+  set(x: number, y: number, val: number): void;
+}
+
+export default class TileMap implements MarchableSpace {
   private dirty: Set<string>;
 
   constructor(private data: number[][]) {
     this.dirty = new Set();
   }
 
-  flush() {
+  flush(): number[][] {
     let vals = [];
     const entries = this.dirty.entries();
     let entry = entries.next();
@@ -21,7 +28,7 @@ export default class Map {
     return vals;
   }
 
-  set(x: number, y: number, val: number) {
+  set(x: number, y: number, val: number): void {
     if (!this.data[y]) {
       this.data[y] = [];
     } else if (this.data[y][x] === val) {
@@ -33,7 +40,7 @@ export default class Map {
   }
 
 
-  get(x: number, y: number) {
+  get(x: number, y: number): number {
     return (this.data[y] && this.data[y][x]) || 0;
   }
 

@@ -1,4 +1,5 @@
-import Map from './Map';
+import TileMap, { MarchableSpace } from './Map';
+import QuadTree, { Rect } from './QuadTree';
 import { Renderer } from './main';
 import { getRadiusCoords } from './coord-utils';
 import { CanvasPrintable } from './canvas-printable';
@@ -132,7 +133,7 @@ export default class MarchingSquares implements CanvasPrintable {
         return val;
     }
 
-    private map: Map;
+    private map: MarchableSpace;
 
     constructor(
         public renderer: Renderer,
@@ -148,10 +149,6 @@ export default class MarchingSquares implements CanvasPrintable {
         //     getRadiusCoords(pt[0], pt[1], 5);
         // });
     }
-
-    // static dist(point1: any, point2: any) {
-    //     return Math.sqrt(Math.pow(point2.x - point1.x, 2) + Math.pow(point2.y - point1.y, 2));
-    // }
 
     static dedupe(array: number[][]) {
         const found = {};
@@ -179,21 +176,22 @@ export default class MarchingSquares implements CanvasPrintable {
         return this.GRID_SIZE;
     }
 
-    public getMap(): Map {
+    public getMap(): MarchableSpace {
         return this.map;
     }
 
     private generateMap() {
-        const mapInner: number[][] = [];
-        // const halfPoint: number = Math.floor(this.GRID_SIZE / 2);
-        this.map = new Map([]);
+        // this.map = new QuadTree(new Rect(0, this.GRID_SIZE, 0, this.GRID_SIZE));
+        this.map = new TileMap([]);
 
+        let val: 0 | 1;
         for (let i = this.GRID_SIZE - 1; i >= 0; i -= 1) {
-            mapInner[i] = [];
             for (let j = 0; j < this.GRID_SIZE; j += 1) {
-                // mapInner[i][j] = MarchingSquares.dist({ x: halfPoint, y: halfPoint }, { x: i, y: j}) / 3;// Math.random() > 0.8 ? 1 : 0;
-                this.map.set(i, j, Math.random() > 0.8 ? 1 : 0);
-                // mapInner[i][j] = Math.random() > 0.8 ? 1 : 0;
+                val = Math.random() > 0.8 ? 1 : 0;
+                // the map defaults to 0s, so we only need to set the active cells
+                if (val) {
+                    this.map.set(i, j, val);
+                }
             }
         }
 

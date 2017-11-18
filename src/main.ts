@@ -1,4 +1,3 @@
-import Map from './Map';
 import MarchingSquares from './marching-squares';
 import VCR from './vcr';
 import MouseEditor from './mouse-editor';
@@ -17,6 +16,7 @@ export class MarchingSquaresApp {
 
     constructor(private cellSize: number = 10, private gridSize: number = 15) {
         this.pipeline = new RenderingPipeline();
+        // The pipeline needs to generate a canvas to display things on to the user.
         const totalCellCount = this.cellSize * this.gridSize;
         this.pipeline.createCanvas(totalCellCount, totalCellCount);
 
@@ -59,4 +59,4 @@ export class MarchingSquaresApp {
 }
 
 document.body.innerHTML = '';
-const app = new MarchingSquaresApp(15, 50);
+const app = new MarchingSquaresApp(15, 25);
