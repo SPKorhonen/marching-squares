@@ -18,10 +18,11 @@ export class MarchingSquaresApp {
         this.pipeline = new RenderingPipeline();
         // The pipeline needs to generate a canvas to display things on to the user.
         const totalCellCount = this.cellSize * this.gridSize;
-        this.pipeline.createCanvas(totalCellCount, totalCellCount);
+        this.pipeline.createCanvas(640, 480);
 
         this.instance = this.createMarchingInstance();
         this.pipeline.addRenderer(this.instance);
+        // this.pipeline.addRenderer(this.instance.getRenderer());
 
         const editor = this.createMouseEditor();
         this.pipeline.addRenderer(editor);

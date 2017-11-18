@@ -180,6 +180,10 @@ export default class MarchingSquares implements CanvasPrintable {
         return this.map;
     }
 
+    public getRenderer(): CanvasPrintable {
+        return (this.map instanceof QuadTree ? this.map : null);
+    }
+
     private generateMap() {
         // this.map = new QuadTree(new Rect(0, this.GRID_SIZE, 0, this.GRID_SIZE));
         this.map = new TileMap([]);
@@ -197,7 +201,7 @@ export default class MarchingSquares implements CanvasPrintable {
 
     }
 
-    public printMap(points: any[]) {
+    public printMap(points: any[], viewport: Rect) {
         const mapContext = this.renderer.getContext('map');
         mapContext.fillStyle = `rgba(255, 0, 0, 0.2)`;
         let coords: number[];
@@ -207,6 +211,10 @@ export default class MarchingSquares implements CanvasPrintable {
 
         for (let i = points.length - 1; i >= 0; i -= 1) {
             coords = points[i];
+            if (!viewport.contains(coords)) {
+                continue;
+            }
+
             x = coords[0];
             y = coords[1];
             value = this.map.get(x, y);
@@ -224,7 +232,7 @@ export default class MarchingSquares implements CanvasPrintable {
         }
     }
 
-    print(toContext: CanvasRenderingContext2D, force: boolean = false) {
+    print(toContext: CanvasRenderingContext2D, viewport: Rect, force: boolean = false) {
         if (typeof toContext !== 'undefined') {
             toContext.clearRect(0, 0, this.getCellSize() * this.getGridSize(), this.getCellSize() * this.getGridSize());
         }
@@ -246,12 +254,12 @@ export default class MarchingSquares implements CanvasPrintable {
         updatedPoints = MarchingSquares.dedupe(updatedPoints);
 
         if (updatedPoints.length) {
-            this.printMap(updatedPoints);
-            this.printBoundary(updatedPoints, 1);
+            this.printMap(updatedPoints, viewport);
+            this.printBoundary(updatedPoints, viewport, 1);
         }
 
-        toContext.drawImage(this.renderer.getCanvas('map'), 0, 0);
-        toContext.drawImage(this.renderer.getCanvas('boundary'), 0, 0);
+        toContext.drawImage(this.renderer.getCanvas('map'), -viewport.xMin, -viewport.yMin);
+        toContext.drawImage(this.renderer.getCanvas('boundary'), -viewport.xMin, -viewport.yMin);
     }
 
     drawSquare(context: CanvasRenderingContext2D, ...points: number[]);
@@ -271,15 +279,15 @@ export default class MarchingSquares implements CanvasPrintable {
 
     private getAllMapPoints(): number[][] {
         const points = [];
-        for (let x = -1; x < this.GRID_SIZE + 1; x += 1) {
-            for (let y = -1; y < this.GRID_SIZE + 1; y += 1) {
+        for (let x = 0; x < this.GRID_SIZE + 1; x += 1) {
+            for (let y = 0; y < this.GRID_SIZE + 1; y += 1) {
                 points.push([x, y]);
             }
         }
         return points;
     }
 
-    public printBoundary(points: number[][], threshold: number = 1) {
+    public printBoundary(points: number[][], viewport: Rect, threshold: number = 1) {
         const boundaryCtx = this.renderer.getContext('boundary');
         // boundaryCtx.clearRect(
         //     0, 0, (this.GRID_SIZE + 1) * this.CELL_SIZE, (this.GRID_SIZE + 1) * this.CELL_SIZE
@@ -308,6 +316,10 @@ export default class MarchingSquares implements CanvasPrintable {
             for (let i = act.length - 1; i >= 0; i -= 2) {
                 const start = act[i - 1].map(z => (z + 0.5) * this.CELL_SIZE);
                 const end = act[i].map(z => (z + 0.5) * this.CELL_SIZE);
+
+                if (!viewport.contains(start) && !viewport.contains(end)) {
+                    continue;
+                }
 
                 boundaryCtx.moveTo(start[0], start[1]);
                 boundaryCtx.lineTo(end[0], end[1]);

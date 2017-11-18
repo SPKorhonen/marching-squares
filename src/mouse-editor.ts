@@ -82,11 +82,9 @@ export default class MouseEditor extends Emitter implements CanvasPrintable {
 
     private onMouseMove(evt: MouseEvent): void {
         if (this.isActive) {
-            // this.clearSelectionHighlight();
             this.toggleSection(evt);
-        } // else {
+        }
         this.updateSelectionHighlight(evt);
-        // }
     }
 
     private toggleSection(evt: MouseEvent): void {

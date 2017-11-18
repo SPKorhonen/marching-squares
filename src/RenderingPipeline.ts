@@ -1,5 +1,6 @@
 import { CanvasPrintable } from './canvas-printable';
 import CanvasRenderer from './CanvasRenderer';
+import { Rect } from './QuadTree';
 
 export default class RenderingPipeline {
     private renderers: CanvasPrintable[] = [];
@@ -9,11 +10,50 @@ export default class RenderingPipeline {
 
     private isFlagged: boolean = false;
 
+    private viewport: Rect;
+    private viewportCords: number[] = [0, 0];
+
     public createCanvas(width: number, height: number): void {
-        const output = new CanvasRenderer(width, height);
+        const output = new CanvasRenderer(height, width);
+        this.viewport = new Rect(
+            this.viewportCords[0],
+            this.viewportCords[0] + width,
+            this.viewportCords[1],
+            this.viewportCords[1] + height
+        );
 
         this.outputCanvas = output.getCanvas();
         this.outputContext = output.getContext();
+
+        console.log(this.outputCanvas);
+        // this.outputCanvas
+        window.addEventListener('keydown', (evt: KeyboardEvent) => {
+            switch (evt.keyCode) {
+                case 37: // left;
+                    this.viewportCords[0] -= 25;
+                    break;
+                case 38: // up;
+                    this.viewportCords[1] -= 25;
+                    break;
+                case 39: // right;
+                    this.viewportCords[0] += 25;
+                    break;
+                case 40: // down;
+                    this.viewportCords[1] += 25;
+                    break;
+
+                default:
+                    break;
+            }
+
+            this.viewport = new Rect(
+                this.viewportCords[0],
+                this.viewportCords[0] + width,
+                this.viewportCords[1],
+                this.viewportCords[1] + height
+            );
+            this.update();
+        });
     }
 
     public getCanvas(): HTMLCanvasElement {
@@ -29,7 +69,7 @@ export default class RenderingPipeline {
         let renderer: CanvasPrintable;
 
         for (let i = all.length - 1; i >= 0; i -= 1) {
-            all[i].print(this.outputContext);
+            all[i].print(this.outputContext, this.viewport);
         }
     }
 }

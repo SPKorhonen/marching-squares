@@ -1,5 +1,6 @@
 import { MarchableSpace } from './Map';
-import { tempdir } from 'shelljs';
+import { CanvasPrintable } from './canvas-printable';
+
 declare var Object: any;
 
 export class Rect {
@@ -8,9 +9,16 @@ export class Rect {
     public getCenter(): number[] {
         return [(this.xMax - this.xMin) / 2, (this.yMax - this.yMin) / 2];
     }
+
+    public contains(point: number[]): boolean {
+        const x = point[0];
+        const y = point[1];
+
+        return (x >= this.xMin && x <= this.xMax && y >= this.yMin && y <= this.yMax);
+    }
 }
 
-export default class QuadTree implements MarchableSpace {
+export default class QuadTree implements MarchableSpace, CanvasPrintable {
     static MAX_KIDS: number = 4;
 
     private northWest: QuadTree;
@@ -67,7 +75,7 @@ export default class QuadTree implements MarchableSpace {
             this.numPoints = Object.keys(this.data).length;
 
             if (this.numPoints > QuadTree.MAX_KIDS) {
-                // this.split();
+                this.split();
             }
         }
     }
@@ -89,9 +97,14 @@ export default class QuadTree implements MarchableSpace {
     }
 
     split() {
-        this.numPoints = 0;
+        const { xMax, yMax } = this.dimensions;
 
-        const { xMin, xMax, yMin, yMax } = this.dimensions;
+        if (xMax / 2 < 4 || yMax / 2 < 4) {
+            return;
+        }
+
+        const { xMin, yMin } = this.dimensions;
+
         this.northWest = new QuadTree(
             new Rect(xMin, xMax / 2, yMin, yMax / 2)
         );
@@ -115,6 +128,7 @@ export default class QuadTree implements MarchableSpace {
             delete this.data[ptKey];
         }
 
+        this.numPoints = 0;
         this.data = {};
     }
 
@@ -136,5 +150,29 @@ export default class QuadTree implements MarchableSpace {
         }
 
         return [];
+    }
+
+    print(toContext: CanvasRenderingContext2D) {
+        // console.log('wtf', this.dimensions.xMin, this.dimensions.yMin)
+        if (this.northWest) {
+            const center = this.dimensions.getCenter();
+
+            // toContext.beginPath();
+            toContext.fillStyle = 'green';
+            const x = this.dimensions.xMax - this.dimensions.xMin;
+            const y = this.dimensions.yMax - this.dimensions.yMin;
+            toContext.moveTo(x * 15, y * 15);
+            toContext.lineTo(0, 100);
+            // toContext.lineTo(, 100);
+            // console.log(center);
+            toContext.fill();
+            // toContext.closePath();
+
+            this.northWest.print(toContext);
+            this.northEast.print(toContext);
+            this.southEast.print(toContext);
+            this.southWest.print(toContext);
+        }
+
     }
 }

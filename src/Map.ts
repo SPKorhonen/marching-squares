@@ -20,7 +20,7 @@ export default class TileMap implements MarchableSpace {
     let entry = entries.next();
 
     while (entry.value) {
-      vals.push(entry.value[0].split(',').map(y => parseInt(y, 10)));
+      vals.push(entry.value[0].split(',').map(parseFloat));
       entry = entries.next();
     }
     this.dirty = new Set();
