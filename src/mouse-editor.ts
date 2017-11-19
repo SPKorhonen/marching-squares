@@ -27,7 +27,7 @@ export default class MouseEditor extends Emitter implements CanvasPrintable {
 
     constructor(private ms: MarchingSquares, private output: HTMLCanvasElement) {
         super();
-        const size = ms.getCellSize() * ms.getGridSize();
+        const size = ms.getCellSize() * MouseEditor.MAX_SIZE;
         this.renderer = new VCR(size, size);
         this.map = ms.getMap();
         this.bindMouseEvents();
@@ -116,12 +116,7 @@ export default class MouseEditor extends Emitter implements CanvasPrintable {
         // if we don't grow the `clearRect` size a little bit,
         // bits of remnant rects remain behind.
         const padding = cellSize;
-        this.context.clearRect(
-            this.lastDimensions[0] - (padding / 2),
-            this.lastDimensions[1] - (padding / 2),
-            this.lastDimensions[2] + padding,
-            this.lastDimensions[3] + padding,
-        );
+        this.context.clearRect(0, 0, this.context.canvas.width, this.context.canvas.height);
 
         if ((x | y) !== -1) {
             this.lastDimensions = [
@@ -131,14 +126,20 @@ export default class MouseEditor extends Emitter implements CanvasPrintable {
                 cellSize * (this.drawSize + 1)
             ];
 
+            // Within the ME context, we just draw a square at 0,0, which keeps
+            // the canvas size down. This increases the speed of `drawImage`
             this.context.fillRect(
-                this.lastDimensions[0],
-                this.lastDimensions[1],
+                0,
+                0,
                 this.lastDimensions[2],
-                this.lastDimensions[3],
+                this.lastDimensions[3]
             );
         }
 
-        toContext.drawImage(this.canvas, 0, 0);
+        toContext.drawImage(
+            this.canvas,
+            this.lastDimensions[0],
+            this.lastDimensions[1],
+        );
     }
 }

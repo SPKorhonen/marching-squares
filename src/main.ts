@@ -60,4 +60,4 @@ export class MarchingSquaresApp {
 }
 
 document.body.innerHTML = '';
-const app = new MarchingSquaresApp(15, 25);
+const app = new MarchingSquaresApp(15, 100);

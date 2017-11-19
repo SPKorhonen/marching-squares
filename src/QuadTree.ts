@@ -99,9 +99,9 @@ export default class QuadTree implements MarchableSpace, CanvasPrintable {
     split() {
         const { xMax, yMax } = this.dimensions;
 
-        if (xMax / 2 < 4 || yMax / 2 < 4) {
-            return;
-        }
+        // if ((xMax / 2) < 1 || (yMax / 2) < 1) {
+        // return;
+        // }
 
         const { xMin, yMin } = this.dimensions;
 
