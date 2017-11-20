@@ -76,12 +76,7 @@ export default class MarchingSquares implements CanvasPrintable {
     static lookup(code, x, y): number[][] {
         let transforms = MarchingSquares.lookupTable[code];
         // these variable names are awful
-        transforms = transforms.map(i => {
-            if (i.length) {
-                return i.map((j, idx) => j + (idx % 2 === 0 ? x : y));
-            }
-            return [];
-        });
+        transforms = transforms.map(i => i.map((j, idx) => j + (idx % 2 === 0 ? x : y)));
 
         return transforms;
     }
@@ -179,8 +174,8 @@ export default class MarchingSquares implements CanvasPrintable {
     }
 
     print(toContext: CanvasRenderingContext2D, viewport: Rect, force: boolean = false) {
-        const dims = toContext.canvas.width * toContext.canvas.height;
-        toContext.clearRect(0, 0, dims, dims);
+        // const dims = toContext.canvas.width * toContext.canvas.height;
+        // toContext.clearRect(0, 0, dims, dims);
 
         let updatedPoints = this.map.flush();
 

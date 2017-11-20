@@ -68,6 +68,9 @@ export default class RenderingPipeline {
         const all = this.renderers;
         let renderer: CanvasPrintable;
 
+        const dims = this.outputContext.canvas.width * this.outputContext.canvas.height;
+        this.outputContext.clearRect(0, 0, dims, dims);
+
         for (let i = all.length - 1; i >= 0; i -= 1) {
             all[i].print(this.outputContext, this.viewport);
         }
