@@ -17,15 +17,14 @@ export default class RenderingPipeline {
         const output = new CanvasRenderer(height, width);
         this.viewport = new Rect(
             this.viewportCords[0],
-            this.viewportCords[0] + width,
             this.viewportCords[1],
-            this.viewportCords[1] + height
+            width,
+            height
         );
 
         this.outputCanvas = output.getCanvas();
         this.outputContext = output.getContext();
 
-        console.log(this.outputCanvas);
         // this.outputCanvas
         window.addEventListener('keydown', (evt: KeyboardEvent) => {
             switch (evt.keyCode) {
@@ -48,9 +47,9 @@ export default class RenderingPipeline {
 
             this.viewport = new Rect(
                 this.viewportCords[0],
-                this.viewportCords[0] + width,
                 this.viewportCords[1],
-                this.viewportCords[1] + height
+                width,
+                height
             );
             this.update();
         });
@@ -68,8 +67,7 @@ export default class RenderingPipeline {
         const all = this.renderers;
         let renderer: CanvasPrintable;
 
-        const dims = this.outputContext.canvas.width * this.outputContext.canvas.height;
-        this.outputContext.clearRect(0, 0, dims, dims);
+        this.outputContext.clearRect(0, 0, this.outputContext.canvas.width, this.outputContext.canvas.height);
 
         for (let i = all.length - 1; i >= 0; i -= 1) {
             all[i].print(this.outputContext, this.viewport);

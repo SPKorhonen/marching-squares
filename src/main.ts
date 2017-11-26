@@ -35,10 +35,10 @@ export class MarchingSquaresApp {
 
         const editor = this.createMouseEditor();
 
-        // this.pipeline.addRenderer(bfs);
+        this.pipeline.addRenderer(bfs);
         // this.pipeline.addRenderer(dfs);
         // this.pipeline.addRenderer(astar);
-        this.pipeline.addRenderer(<any>this.instance.getMap());
+        // this.pipeline.addRenderer(<any>this.instance.getMap());
         this.pipeline.addRenderer(this.instance);
         this.pipeline.addRenderer(editor);
 
@@ -52,16 +52,16 @@ export class MarchingSquaresApp {
 
         // console.log('astar', astar.search([6, 6], [20, 20]));
         // console.log('dfs', dfs.search([12, 12], [3, 3]));
-        // (async () => {
-        //     let lastCoords = [1, 1];
-        //     let newCoords;
-        //     while (true) {
-        //         newCoords = [Math.round(Math.random() * 20) + 1, Math.round(Math.random() * 20) + 1];
-        //         await bfs.search(lastCoords, newCoords);
-        //         lastCoords = newCoords;
-        //         await new Promise(res => setTimeout(res, 1500));
-        //     }
-        // })();
+        (async () => {
+            let lastCoords = [1, 1];
+            let newCoords;
+            while (true) {
+                newCoords = [Math.round(Math.random() * 20) + 1, Math.round(Math.random() * 20) + 1];
+                await bfs.search(lastCoords, newCoords);
+                lastCoords = newCoords;
+                await new Promise(res => setTimeout(res, 1500));
+            }
+        })();
     }
 
     createMarchingInstance(): MarchingSquares {
@@ -92,4 +92,4 @@ export class MarchingSquaresApp {
 }
 
 document.body.innerHTML = '';
-const app = new MarchingSquaresApp(15, 20);
+const app = new MarchingSquaresApp(15, 50);
