@@ -1,16 +1,17 @@
 import Emitter from './emitter';
 import { MarchableSpace } from './Map';
 import { CanvasPrintable } from './canvas-printable';
+import { getRadiusCoords } from './coord-utils';
 
 declare var Object: any;
 
 export class Rect {
-    public xMin:number;
-    public yMin:number;
-    public xMax:number;
-    public yMax:number;
+    public xMin: number;
+    public yMin: number;
+    public xMax: number;
+    public yMax: number;
 
-    constructor(public xPoint:number, public yPoint:number, public width:number, public height:number) {
+    constructor(public xPoint: number, public yPoint: number, public width: number, public height: number) {
         this.yMin = yPoint;
         this.xMin = xPoint;
         this.xMax = xPoint + width;
@@ -27,10 +28,24 @@ export class Rect {
     public contains(point: number[]): boolean {
         const x = point[0];
         const y = point[1];
-        
+
         return (x >= this.xMin && x <= this.xMax && y >= this.yPoint && y <= this.yMax);
     }
 }
+
+function debounce(func: Function, wait: number, immediate: boolean = true): () => void {
+    var timeout;
+    return function () {
+        const later = function () {
+            timeout = null;
+            if (!immediate) func();
+        };
+        const callNow = immediate && !timeout;
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+        if (callNow) func();
+    };
+};
 
 export default class QuadTree extends Emitter implements MarchableSpace, CanvasPrintable {
     private northWest: QuadTree;
@@ -40,18 +55,34 @@ export default class QuadTree extends Emitter implements MarchableSpace, CanvasP
 
     private isDivided: boolean = false;
 
-    private data: { [point: string]: any } = {};
+    private data: { [point: string]: number } = {};
     protected dirty: { [point: string]: any } = {};
 
-    constructor(private region: Rect, private parent?:QuadTree) {
+    constructor(private region: Rect, private parent?: QuadTree) {
         super();
+        this.unsplit = debounce(this.unsplit.bind(this), 25);
     }
 
-    static getDirection(x:number, y:number, region:Rect):string {
-        const northSouth = y < region.yMin + (region.height/ 2) ? 'north' : 'south';
+    static getDirection(x: number, y: number, region: Rect): string {
+        const northSouth = y < region.yMin + (region.height / 2) ? 'north' : 'south';
         const eastWest = x < region.xMin + (region.width / 2) ? 'West' : 'East';
         const dir = `${northSouth}${eastWest}`;
         return dir;
+    }
+
+    getNeighboringPoints(x: number, y: number): number[][] {
+        if (x < this.region.xMin || x > this.region.xMax || y < this.region.yMin || y > this.region.yMax) {
+            return [];
+        }
+
+        return getRadiusCoords(x, y, 3);
+
+        // if (this.isDivided) {
+        //     const dir = QuadTree.getDirection(x, y, this.region);
+        //     return this[dir].getNeighboringPoints(x, y);
+        // }
+
+        // return Object.keys(this.data).map(x => x.split(',').map(parseFloat));
     }
 
     get(x: number, y: number): number {
@@ -72,7 +103,7 @@ export default class QuadTree extends Emitter implements MarchableSpace, CanvasP
     }
     set(x: number, y: number, data: any, sendUpdate: boolean = true) {
         if (this.isDivided) {
-            const dir = QuadTree.getDirection(x, y, this.region);            
+            const dir = QuadTree.getDirection(x, y, this.region);
             return this[dir].set(x, y, data, sendUpdate);
         }
 
@@ -90,9 +121,7 @@ export default class QuadTree extends Emitter implements MarchableSpace, CanvasP
             if (data === 0) {
                 delete this.data[`${x},${y}`];
                 if (this.parent) {
-                    setTimeout(()=>{
-                        this.parent.unsplit();
-                    }, 25);
+                    this.parent.unsplit();
                 }
             } else {
                 this.data[`${x},${y}`] = data;
@@ -106,6 +135,7 @@ export default class QuadTree extends Emitter implements MarchableSpace, CanvasP
     }
 
     unsplit() {
+        console.log('unsplit');
         if (this.isDivided) {
             const count = this.getCount();
             if (count <= 4) {
@@ -125,7 +155,7 @@ export default class QuadTree extends Emitter implements MarchableSpace, CanvasP
 
     getCount() {
         let num = Object.keys(this.data).length;
-        if(this.isDivided) {
+        if (this.isDivided) {
             num += this.northEast.getCount();
             num += this.northWest.getCount();
             num += this.southEast.getCount();
@@ -144,16 +174,16 @@ export default class QuadTree extends Emitter implements MarchableSpace, CanvasP
             this
         );
         this.northEast = new QuadTree(
-            new Rect(this.region.xPoint + halfWidth, this.region.yPoint, halfWidth, halfHeight),            
+            new Rect(this.region.xPoint + halfWidth, this.region.yPoint, halfWidth, halfHeight),
             this
         );
 
         this.southEast = new QuadTree(
-            new Rect(this.region.xPoint + halfWidth, this.region.yPoint + halfHeight, halfWidth, halfHeight),                        
+            new Rect(this.region.xPoint + halfWidth, this.region.yPoint + halfHeight, halfWidth, halfHeight),
             this
         );
         this.southWest = new QuadTree(
-            new Rect(this.region.xPoint, this.region.yPoint + halfHeight, halfWidth, halfHeight),            
+            new Rect(this.region.xPoint, this.region.yPoint + halfHeight, halfWidth, halfHeight),
             this
         );
 
@@ -163,7 +193,7 @@ export default class QuadTree extends Emitter implements MarchableSpace, CanvasP
             const point = ptString.split(',').map(parseFloat);
             const x = point[0];
             const y = point[1];
-            const dir = QuadTree.getDirection(x, y, this.region);            
+            const dir = QuadTree.getDirection(x, y, this.region);
 
             // console.log('adsf', dir, this[dir]);
             this[dir].set(x, y, this.data[ptString], false);
@@ -172,7 +202,7 @@ export default class QuadTree extends Emitter implements MarchableSpace, CanvasP
         this.data = {};
     }
 
-    flush(getAll:boolean = false): number[][] {
+    flush(getAll: boolean = false): number[][] {
         let flushed = [];
         if (this.isDivided) {
             flushed = flushed.concat(
@@ -187,7 +217,7 @@ export default class QuadTree extends Emitter implements MarchableSpace, CanvasP
                 const point = ptString.split(',').map(parseFloat);
                 flushed.push(point);
             }
-            if (!getAll) {                
+            if (!getAll) {
                 this.dirty = {};
             }
         }

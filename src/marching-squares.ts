@@ -178,22 +178,22 @@ export default class MarchingSquares implements CanvasPrintable {
         // toContext.clearRect(0, 0, dims, dims);
 
         let updatedPoints = this.map.flush();
-        
-        if (force && updatedPoints.length === 0) {
-            const cellSize = this.getCellSize();
-            const topLeft = [viewport.xMin % cellSize, viewport.yMin % cellSize];
-            const bottomRight = [viewport.xMax % cellSize, viewport.yMax % cellSize];
 
-            updatedPoints = this.getMapPoints(topLeft[0], topLeft[1], bottomRight[0], bottomRight[1]);
-        } else if (updatedPoints.length > 0 && updatedPoints.length < Math.pow(this.getGridSize(), 2)) {
-            let actualPoints = [];
-            let pt;
-            for (let i = updatedPoints.length - 1; i >= 0; i -= 1) {
-                pt = updatedPoints[i];
-                actualPoints = actualPoints.concat(getRadiusCoords(pt[0] - 1, pt[1] - 1, 2));
-            }
-            updatedPoints = actualPoints;
-        }
+        // if (force && updatedPoints.length === 0) {
+        const cellSize = this.getCellSize();
+        const topLeft = [Math.round(viewport.xMin / cellSize), Math.round(viewport.yMin / cellSize)];
+        const bottomRight = [Math.round(viewport.xMax / cellSize), Math.round(viewport.yMax / cellSize)];
+
+        updatedPoints = this.getMapPoints(topLeft[0], topLeft[1], bottomRight[0], bottomRight[1]);
+        // } else if (updatedPoints.length > 0 && updatedPoints.length < Math.pow(this.getGridSize(), 2)) {
+        //     let actualPoints = [];
+        //     let pt;
+        //     for (let i = updatedPoints.length - 1; i >= 0; i -= 1) {
+        //         pt = updatedPoints[i];
+        //         actualPoints = actualPoints.concat(this.map.getNeighboringPoints(pt[0], pt[1]));
+        //     }
+        //     updatedPoints = actualPoints;
+        // }
 
         updatedPoints = MarchingSquares.dedupe(updatedPoints);
 

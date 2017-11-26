@@ -1,12 +1,16 @@
 import Emitter from "./emitter";
+import { getRadiusCoords } from './coord-utils';
 
 declare var Object: any;
+
+
 
 export interface MarchableSpace {
   flush(): number[][];
   get(x: number, y: number): number;
   getBinary(x: number, y: number, threshold: number): number;
   set(x: number, y: number, val: number): void;
+  getNeighboringPoints(x: number, y: number): number[][];
 }
 
 export default class TileMap extends Emitter implements MarchableSpace {
@@ -59,5 +63,9 @@ export default class TileMap extends Emitter implements MarchableSpace {
       return 1;
     }
     return (this.data[y] && this.data[y][x] >= threshold) ? 1 : 0;
+  }
+
+  getNeighboringPoints(x: number, y: number): number[][] {
+    return getRadiusCoords(x, y, 2);
   }
 }

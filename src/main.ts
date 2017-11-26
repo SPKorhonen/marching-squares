@@ -21,7 +21,7 @@ export class MarchingSquaresApp {
         this.pipeline = new RenderingPipeline();
         // The pipeline needs to generate a canvas to display things on to the user.
         const totalCellCount = this.cellSize * this.gridSize;
-        this.pipeline.createCanvas(1240, 700);
+        this.pipeline.createCanvas(800, 400);
 
         this.instance = this.createMarchingInstance();
         const bfs = new BreadthPathFinder(this.instance);
@@ -38,10 +38,9 @@ export class MarchingSquaresApp {
         this.pipeline.addRenderer(bfs);
         // this.pipeline.addRenderer(dfs);
         // this.pipeline.addRenderer(astar);
-        // this.pipeline.addRenderer(<any>this.instance.getMap());
+        this.pipeline.addRenderer(<any>this.instance.getMap());
         this.pipeline.addRenderer(this.instance);
         this.pipeline.addRenderer(editor);
-
 
         const map: any = this.instance.getMap();
         map.on('update', this.toggleUpdateFlag.bind(this, true));
@@ -50,18 +49,19 @@ export class MarchingSquaresApp {
         this.tick = this.tick.bind(this);
         this.tick();
 
-        // console.log('astar', astar.search([6, 6], [20, 20]));
-        // console.log('dfs', dfs.search([12, 12], [3, 3]));
-        (async () => {
-            let lastCoords = [1, 1];
-            let newCoords;
-            while (true) {
-                newCoords = [Math.round(Math.random() * 20) + 1, Math.round(Math.random() * 20) + 1];
-                await bfs.search(lastCoords, newCoords);
-                lastCoords = newCoords;
-                await new Promise(res => setTimeout(res, 1500));
-            }
-        })();
+        // (async () => {
+        //     let lastCoords = [1, 1];
+        //     let newCoords;
+        //     while (true) {
+        //         newCoords = [Math.round(Math.random() * 20) + 1, Math.round(Math.random() * 20) + 1];
+        //         await bfs.search(lastCoords, newCoords);
+        //         lastCoords = newCoords;
+        //         await new Promise(res => setTimeout(res, 1500));
+        //     }
+        // })();
+
+        // console.log(this.instance.getMap());
+        // console.log(JSON.stringify().length);
     }
 
     createMarchingInstance(): MarchingSquares {
