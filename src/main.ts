@@ -5,7 +5,7 @@ import RenderingPipeline from './RenderingPipeline';
 import { DepthPathfinder } from './DepthPathfinder';
 import { BreadthPathFinder } from './BreadthPathfinder';
 // import { AStarPathfinder } from './AStarPathfinder';
-import { setTimeout } from 'timers';
+// import { setTimeout } from 'timers';
 
 export interface Renderer {
     getContext(name?: string): CanvasRenderingContext2D;
@@ -35,13 +35,16 @@ export class MarchingSquaresApp {
 
         const editor = this.createMouseEditor();
 
-        this.pipeline.addRenderer(bfs);
-        this.pipeline.addRenderer(dfs);
+        // this.pipeline.addRenderer(bfs);
+        // this.pipeline.addRenderer(dfs);
         // this.pipeline.addRenderer(astar);
+        this.pipeline.addRenderer(<any>this.instance.getMap());
         this.pipeline.addRenderer(this.instance);
         this.pipeline.addRenderer(editor);
 
 
+        const map: any = this.instance.getMap();
+        map.on('update', this.toggleUpdateFlag.bind(this, true));
 
         this.pipeline.update();
         this.tick = this.tick.bind(this);
@@ -49,16 +52,16 @@ export class MarchingSquaresApp {
 
         // console.log('astar', astar.search([6, 6], [20, 20]));
         // console.log('dfs', dfs.search([12, 12], [3, 3]));
-        (async () => {
-            let lastCoords = [1, 1];
-            let newCoords;
-            while (true) {
-                newCoords = [Math.round(Math.random() * 48) + 1, Math.round(Math.random() * 48) + 1];
-                await bfs.search(lastCoords, newCoords);
-                lastCoords = newCoords;
-                await new Promise(res => setTimeout(res, 1500));
-            }
-        })();
+        // (async () => {
+        //     let lastCoords = [1, 1];
+        //     let newCoords;
+        //     while (true) {
+        //         newCoords = [Math.round(Math.random() * 20) + 1, Math.round(Math.random() * 20) + 1];
+        //         await bfs.search(lastCoords, newCoords);
+        //         lastCoords = newCoords;
+        //         await new Promise(res => setTimeout(res, 1500));
+        //     }
+        // })();
     }
 
     createMarchingInstance(): MarchingSquares {
@@ -89,4 +92,4 @@ export class MarchingSquaresApp {
 }
 
 document.body.innerHTML = '';
-const app = new MarchingSquaresApp(15, 50);
+const app = new MarchingSquaresApp(15, 20);

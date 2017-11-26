@@ -9,10 +9,6 @@ interface VcrContext {
 export default class VirtualCanvasRenderer implements Renderer {
     instances: any = {};
 
-    static getRandomID(): string {
-        return Math.random().toString(36).slice(2);
-    }
-
     constructor(private height: number, private width: number) { }
 
     public getContext(name?: string): CanvasRenderingContext2D {

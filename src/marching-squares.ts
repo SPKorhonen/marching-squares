@@ -126,19 +126,19 @@ export default class MarchingSquares implements CanvasPrintable {
     }
 
     private generateMap() {
-        // this.map = new QuadTree(new Rect(-this.GRID_SIZE, this.GRID_SIZE, -this.GRID_SIZE, this.GRID_SIZE));
-        this.map = new TileMap([]);
+        this.map = new QuadTree(new Rect(0, this.GRID_SIZE, 0, this.GRID_SIZE));
+        // this.map = new TileMap([]);
 
-        let val: 0 | 1;
-        for (let i = this.GRID_SIZE + 1; i >= -1; i -= 1) {
-            for (let j = this.GRID_SIZE + 1; j >= -1; j -= 1) {
-                val = Math.random() > 0.8 ? 1 : 0;
-                // the map defaults to 0s, so we only need to set the active cells
-                if (val) {
-                    this.map.set(i, j, val);
-                }
-            }
-        }
+        // let val: 0 | 1;
+        // for (let i = this.GRID_SIZE + 1; i >= -1; i -= 1) {
+        //     for (let j = this.GRID_SIZE + 1; j >= -1; j -= 1) {
+        //         val = Math.random() > 0.8 ? 1 : 0;
+        //         // the map defaults to 0s, so we only need to set the active cells
+        //         if (val) {
+        //             this.map.set(i, j, val);
+        //         }
+        //     }
+        // }
 
     }
 
