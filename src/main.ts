@@ -10,6 +10,7 @@ import { BreadthPathFinder } from './BreadthPathfinder';
 export interface Renderer {
     getContext(name?: string): CanvasRenderingContext2D;
     getCanvas(name?: string): HTMLCanvasElement;
+    free(name?: string): void;
 }
 
 export class MarchingSquaresApp {
@@ -38,7 +39,7 @@ export class MarchingSquaresApp {
         this.pipeline.addRenderer(bfs);
         // this.pipeline.addRenderer(dfs);
         // this.pipeline.addRenderer(astar);
-        this.pipeline.addRenderer(<any>this.instance.getMap());
+        // this.pipeline.addRenderer(<any>this.instance.getMap());
         this.pipeline.addRenderer(this.instance);
         this.pipeline.addRenderer(editor);
 

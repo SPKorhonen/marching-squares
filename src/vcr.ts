@@ -11,20 +11,35 @@ export default class VirtualCanvasRenderer implements Renderer {
 
     constructor(private height: number, private width: number) { }
 
-    public getContext(name?: string): CanvasRenderingContext2D {
-        if (!this.instances.hasOwnProperty(name || 'main')) {
-            this.init(name || 'main');
+    public getContext(name: string = 'main'): CanvasRenderingContext2D {
+        if (!this.instances.hasOwnProperty(name)) {
+            this.init(name);
         }
 
-        return this.instances[name || 'main'].context;
+        return this.instances[name].context;
     }
 
-    public getCanvas(name?: string): HTMLCanvasElement {
-        if (!this.instances.hasOwnProperty(name || 'main')) {
-            this.init(name || 'main');
+    public getCanvas(name: string = 'main'): HTMLCanvasElement {
+        if (!this.instances.hasOwnProperty(name)) {
+            this.init(name);
         }
 
-        return this.instances[name || 'main'].canvas;
+        return this.instances[name].canvas;
+    }
+
+    public free(name: string = 'main') {
+        if (this.instances.hasOwnProperty(name)) {
+            // Remove the element from the DOM in case it was appended.
+            const canvas = this.instances[name].canvas;
+            if (canvas.parentNode) {
+                canvas.parentNode.removeChild(canvas);
+            }
+
+            this.instances[name].context = null;
+            this.instances[name].canvas = null;
+
+            delete this.instances[name];
+        }
     }
 
     private createNew() {

@@ -23,6 +23,19 @@ export default class CanvasRenderer implements Renderer {
         return this.canvas;
     }
 
+    public free(): void {
+        if (this.canvas) {
+            // Remove the element from the DOM in case it was appended.
+            const canvas = this.canvas;
+            if (canvas.parentNode) {
+                canvas.parentNode.removeChild(canvas);
+            }
+
+            this.context = null;
+            this.canvas = null;
+        }
+    }
+
     private create() {
         const canvas = document.createElement('canvas');
         canvas.setAttribute('height', `${this.height}px`);
